@@ -38,7 +38,11 @@ threadSleep()
 void
 threadYield()
 {
+#if __cplusplus >= 201703L
+    std::this_thread::yield();
+#else
     __TBB_Yield();
+#endif
 }
 
 void

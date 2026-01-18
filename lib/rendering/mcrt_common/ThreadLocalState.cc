@@ -11,7 +11,7 @@
 #include <scene_rdl2/render/logging/logging.h>
 #include <scene_rdl2/render/util/Memory.h>
 #include <tbb/enumerable_thread_specific.h>
-#include <tbb/task_scheduler_init.h>
+#include <tbb/task_arena.h>
 
 #include <thread>
 
@@ -302,7 +302,7 @@ initTLS(const TLSInitParams &initParams)
     gPrivate.mInitParams = initParams;
 
     if (gPrivate.mInitParams.mDesiredNumTBBThreads == 0) {
-        gPrivate.mInitParams.mDesiredNumTBBThreads = tbb::task_scheduler_init::default_num_threads();
+        gPrivate.mInitParams.mDesiredNumTBBThreads = tbb::this_task_arena::max_concurrency();
     }
 
     MNRY_ASSERT_REQUIRE(gPrivate.mInitParams.mDesiredNumTBBThreads);

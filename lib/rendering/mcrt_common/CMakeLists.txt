@@ -48,9 +48,19 @@ endif()
 # ----------------------------------------
 
 get_target_property(ISPC_TARGET_OBJECTS ${objLib} TARGET_OBJECTS)
+
+# AffinityManager uses Linux-only NUMA/CPU affinity APIs
+# On Windows, use stub implementation
+if(IsWindowsPlatform)
+    set(AFFINITY_SOURCES AffinityManager_windows.cc)
+else()
+    set(AFFINITY_SOURCES AffinityManager.cc)
+endif()
+set(AFFINITY_HEADERS AffinityManager.h)
+
 target_sources(${component}
     PRIVATE
-	AffinityManager.cc
+        ${AFFINITY_SOURCES}
         Frustum.cc
         ProfileAccumulator.cc
         ProfileAccumulatorHandles.cc
@@ -64,7 +74,7 @@ target_sources(${component}
 
 set_property(TARGET ${component}
     PROPERTY PUBLIC_HEADER
-        AffinityManager.h
+        ${AFFINITY_HEADERS}
         ExecutionMode.h
         Frustum.h
         ThreadLocalState.hh

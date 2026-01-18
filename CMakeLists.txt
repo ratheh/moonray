@@ -166,10 +166,10 @@ endif()
 # Create include/${PACKAGE_NAME} link in the build directory for generated headers.
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 if(IsWindowsPlatform)
-    # CMake on windows seems to not set the directory flag /d so we need to do it this way
+    # Windows: Use junction (/J) instead of directory symlink (/d) - junctions don't need admin
     file(TO_NATIVE_PATH "${PROJECT_BINARY_DIR}/include/${PACKAGE_NAME}" _dstDir)
-    file(TO_NATIVE_PATH "../lib" _srcDir)
-    execute_process(COMMAND cmd.exe /c mklink /d "${_dstDir}" "${_srcDir}")
+    file(TO_NATIVE_PATH "${PROJECT_SOURCE_DIR}/lib" _srcDir)
+    execute_process(COMMAND cmd.exe /c mklink /J "${_dstDir}" "${_srcDir}" ERROR_QUIET)
 else()
     file(CREATE_LINK ../lib ${PROJECT_BINARY_DIR}/include/${PACKAGE_NAME} SYMBOLIC)
 endif()

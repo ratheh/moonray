@@ -9,5 +9,8 @@ if (MOONRAY_BUILD_POINT_GENERATION_CMDS)
     add_subdirectory(point_generation_cmd)
 endif()
 
-add_subdirectory(denoise_cmd)
+if (BUILD_DENOISE)
+    add_subdirectory(denoise_cmd)
+endif()
+
 add_subdirectory(raas_cmd)

@@ -27,7 +27,11 @@ function(writeSamplingDefinitionsHeader defs)
         string(APPEND contents ${def} "\n")
     endforeach()
 
+    # Write to both locations for compatibility
+    # 1. Original location (for local build dir includes)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/SamplingDefinitions.h ${contents})
+    # 2. Include path structure (for moonray/rendering/pbr/ includes)
+    file(WRITE ${PROJECT_BINARY_DIR}/include/${PACKAGE_NAME}/rendering/pbr/SamplingDefinitions.h ${contents})
     message("Generated SamplingDefinitions.h")
 
     # install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SamplingDefinitions.h

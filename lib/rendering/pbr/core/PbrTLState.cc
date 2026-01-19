@@ -1,5 +1,11 @@
 // Copyright 2023-2024 DreamWorks Animation LLC
 // SPDX-License-Identifier: Apache-2.0
+
+// MSVC compatibility for GCC branch prediction hint
+#ifdef _MSC_VER
+#define __builtin_expect(x, y) (x)
+#endif
+
 #include "DebugRay.h"
 #include "PbrTLState.h"
 #include "RayState.h"

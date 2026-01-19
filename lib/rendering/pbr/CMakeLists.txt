@@ -180,10 +180,8 @@ set(aovMatParser_cc ${BISON_${yaccTarget}_OUTPUT_SOURCE})
 set(aovMatParser_hh ${BISON_${yaccTarget}_OUTPUT_HEADER})
 
 set(lexTarget ${component}_lex)
+# Note: --wincompat is only supported by win_flex, not MSYS2/cygwin flex
 set(flex_compile_flags "-PaovMat_yy")
-if(IsWindowsPlatform)
-    set(flex_compile_flags "-PaovMat_yy --wincompat")    
-endif()
 flex_target(${lexTarget} core/AovMat.ll core/AovMatLexer.cc
              COMPILE_FLAGS ${flex_compile_flags}
 )
@@ -294,10 +292,12 @@ foreach(binFile ${binFiles})
     elseif(IsWindowsPlatform)
         set(objFile sampler/${baseName}.obj)
         set(_srcFile ${baseName}.c)
+        # xxd is available from vim package in MSYS2 (pacman -S vim)
+        find_program(XXD_EXECUTABLE xxd REQUIRED)
         add_custom_command(
             OUTPUT  ${objFile}
             DEPENDS ${binFile}
-            COMMAND C:/Users/alex.fuller/workspace/openmoonray/xxd -i -n _binary_${baseName} "${binFile}" "${_srcFile}" && cl /c "${_srcFile}"
+            COMMAND ${XXD_EXECUTABLE} -i -n _binary_${baseName} "${binFile}" "${_srcFile}" && cl /c "${_srcFile}"
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sampler)
     else()
         add_custom_command(

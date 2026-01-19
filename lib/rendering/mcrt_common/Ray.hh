@@ -65,6 +65,15 @@
     HVD_VALIDATE(RayExtension, shadowReceiverId);          \
     HVD_END_VALIDATION
 
+// Windows ISPC padding: ALIGN(16) on C++ Ray adds 4 bytes padding to reach 256.
+// ISPC needs matching padding since RayDifferential inherits from Ray in C++ but is
+// flat in ISPC. Use HVD_ISPC_PAD which only adds padding in ISPC, not in C++.
+#if defined(_MSC_VER) || defined(TARGET_OS_WINDOWS)
+#define HVD_RAY_ALIGN_PAD ;HVD_ISPC_PAD(rayAlignPad, 4)
+#else
+#define HVD_RAY_ALIGN_PAD
+#endif
+
 #define MCRT_COMMON_RAY_MEMBERS                                 /*  size */\
     HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), org);    /*   12  */\
     HVD_MEMBER(float, tnear);                                   /*   16  */\
@@ -82,11 +91,20 @@
     HVD_MEMBER(int32_t, instID);                                /*   80  */\
     HVD_MEMBER(RayExtension, ext);                              /*  248  */\
     HVD_MEMBER(Flags, mFlags)                                   /*  252  */\
+    HVD_RAY_ALIGN_PAD                                           /*  256 (Windows) */\
                                          /* macOS: 252 * 4 lanes = 1008  */\
                                          /* linux: 252 * 8 lanes = 2016  */\
+                                         /* windows: 256 * 8 lanes = 2048  */\
 
+// End padding for RayDifferential to match C++ struct size with alignment:
+// - ARM (CACHE_LINE_SIZE=128): 16 bytes padding (304 → 320)
+// - Windows with ALIGN(16) inheritance: After HVD_RAY_ALIGN_PAD (4 bytes) makes Ray 256 bytes,
+//   RayDifferential needs 12 bytes padding (308 → 320) to match C++ ALIGN(16) rounding
+// - Linux: no padding needed (304 bytes)
 #if CACHE_LINE_SIZE == 128
 #define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD ;HVD_ARRAY(uint32_t, pad1, (4))
+#elif defined(_MSC_VER) || defined(TARGET_OS_WINDOWS)
+#define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD ;HVD_ARRAY(uint32_t, pad1, (3))
 #else
 #define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD
 #endif

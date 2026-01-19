@@ -12,6 +12,11 @@
 /* bison forces the header to be .hh if the parser code extension is .cc */
 #include "AovMatParser.hh"
 
+// MSVC needs io.h for isatty (used by flex-generated code)
+#ifdef _MSC_VER
+#include <io.h>
+#endif
+
 // this lexer is not thread-safe!
 #if defined (__ICC)
 __pragma(warning(disable:1711))

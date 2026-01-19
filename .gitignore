@@ -72,7 +72,14 @@ lib/rendering/pbr/core/AovMatParser.cc
 # Sampling definitions (generated)
 lib/rendering/pbr/SamplingDefinitions.h
 
-# Symlinks/junctions that get recreated by CMake configure
-# (These are tracked as relative symlinks but CMake recreates them as absolute)
-include/moonray
-moonray
+# Windows Junction Handling
+# The symlinks include/moonray and moonray are tracked as Unix symlinks.
+# On Windows, CMake recreates them as junctions pointing to lib/.
+# The symlinks show as "deleted" (expected - content differs).
+# Git traverses the junctions and sees lib/ contents as untracked.
+# We must ignore the junction contents to keep git status clean.
+# DO NOT delete these symlinks from git - they're needed for Linux/macOS.
+
+# Ignore contents accessed via junctions (these point to lib/)
+/include/moonray/*
+/moonray/*

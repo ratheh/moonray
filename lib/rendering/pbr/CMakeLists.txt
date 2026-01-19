@@ -409,6 +409,8 @@ target_sources(${component}
 target_include_directories(${component}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        # Include core/ for flex/bison generated files
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/core>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>

@@ -3,6 +3,14 @@
 
 //
 //
+
+// Windows compatibility for STDOUT_FILENO and isatty
+#ifdef _WIN32
+#include <io.h>
+#define isatty _isatty
+#define STDOUT_FILENO _fileno(stdout)
+#endif
+
 #include <scene_rdl2/render/util/AtomicFloat.h> // Needs to be included before any OpenImageIO file
 #include <moonray/rendering/pbr/core/Scene.h>
 
@@ -558,7 +566,7 @@ RenderDriver::RenderDriver(const TLSInitParams &initParams) :
     setProcCpuAffinity(tlsInitParams);
 
     if (tlsInitParams.mDesiredNumTBBThreads == 0) {
-        tlsInitParams.mDesiredNumTBBThreads = tbb::task_scheduler_init::default_num_threads();
+        tlsInitParams.mDesiredNumTBBThreads = tbb::this_task_arena::max_concurrency();
     }
 
 #ifdef FORCE_SINGLE_THREADED_RENDERING
@@ -570,13 +578,15 @@ RenderDriver::RenderDriver(const TLSInitParams &initParams) :
     tlsInitParams.initShadingTls = shading::TLState::allocTls;
     tlsInitParams.initTLSTextureSupport = shading::initTexturingSupport;
 
-    // There are 2 task_scheduler_init objects created in this class. Both are
+    // There are 2 tbb::global_control objects created in this class. Both are
     // essential. This first call sets the number of threads for the frame
     // building phase to that specified in the TLSInitParams.
     // The second is used by the threads for the MCRT stage. However, MCRT threads
     // itself is not using the TBB thread pool anymore and use MoonRay own thread
     // pool due to we need CPU affinity control for them.
-    mTaskScheduler = new tbb::task_scheduler_init(int(tlsInitParams.mDesiredNumTBBThreads));
+    mTaskScheduler = std::make_unique<tbb::global_control>(
+        tbb::global_control::max_allowed_parallelism,
+        tlsInitParams.mDesiredNumTBBThreads);
 
     mFilm = alignedMallocCtor<Film>(CACHE_LINE_SIZE);
 
@@ -645,18 +655,14 @@ RenderDriver::~RenderDriver()
 
     freeXPUQueues();
 
-    // Terminate task scheduler and wait for tbb worker threads to finish.
+    // Release the global_control object (replaces task_scheduler_init).
     // We need worker threads to exit before the TLS cleanup which is where
     // we cleanup OpenImageIO. Otherwise we get a crash in that library when
     // worker threads attempt to access the static mutex
     // ImageCacheImpl::m_perthread_info_mutex upon cleanup
     // (in ImageCacheImpl::cleanup_perthread_info()).
-    // This requires using -D__TBB_SUPPORTS_WORKERS_WAITING_IN_TERMINATE
-    // when building this library, and also to make sure that no other
-    // tbb::task_scheduler_init or other higher-level task scheduler objects
-    // (i.e. tbb::task_group, etc.) are active in the process.
-    MNRY_VERIFY(mTaskScheduler)->terminate();
-    delete mTaskScheduler;
+    // Note: With oneAPI TBB, global_control lifetime determines parallelism scope.
+    mTaskScheduler.reset();
 
     cleanUpTLS();
 }
@@ -2310,9 +2316,10 @@ RenderDriver::renderThread(RenderDriver *driver,
     // We are now running in the context of the render thread stage.
     // This sets up the task scheduler used for MCRT stage. However, the MCRT
     // thread itself is not using the TBB thread anymore due to we need CPU-affinity
-    // control. We still keep tbb::task_scheduler for other TBB thread requirements
+    // control. We still keep tbb::global_control for other TBB thread requirements
     // we might create during the MCRT stage.
-    tbb::task_scheduler_init scheduler(int(initParams.mDesiredNumTBBThreads));
+    tbb::global_control scheduler(tbb::global_control::max_allowed_parallelism,
+                                  initParams.mDesiredNumTBBThreads);
 
     // TLS initialization.
     initTLS(initParams);

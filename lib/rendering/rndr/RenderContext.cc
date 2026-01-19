@@ -1507,7 +1507,7 @@ RenderContext::runDisplayFiltersBatch() const
     }
     snapshotAovsForDisplayFilters(true, true);
     simpleLoop (/*parallel*/ true, 0u, (unsigned)mDriver->getTiles()->size(), [&](unsigned tileIdx) {
-        int threadId = tbb::task_arena::current_thread_index();
+        int threadId = tbb::this_task_arena::current_thread_index();
         displayFilterDriver.runDisplayFilters(tileIdx, threadId);
     });
 }

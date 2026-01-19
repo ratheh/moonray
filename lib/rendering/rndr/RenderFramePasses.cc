@@ -7,6 +7,14 @@
 // based on the already constructed multi-passes workQueue information.
 // Boot and shutdown multi-threads for MCRT computation is also placed here.
 //
+
+// Windows compatibility for STDOUT_FILENO and isatty
+#ifdef _WIN32
+#include <io.h>
+#define isatty _isatty
+#define STDOUT_FILENO _fileno(stdout)
+#endif
+
 #include <scene_rdl2/render/util/AtomicFloat.h> // Needs to be included before any OpenImageIO file
 #include <moonray/rendering/pbr/core/Scene.h>
 

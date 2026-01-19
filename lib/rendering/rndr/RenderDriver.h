@@ -28,7 +28,8 @@
 #include <scene_rdl2/common/grid_util/Parser.h>
 #include <scene_rdl2/render/util/AtomicFloat.h>
 
-#include <tbb/task_scheduler_init.h>
+#include <tbb/task_arena.h>
+#include <tbb/global_control.h>
 
 //#define SINGLE_THREAD_CRAWLALLPIXELS
 
@@ -720,7 +721,7 @@ private:
     std::unique_ptr<TileScheduler>  mTileSchedulerCheckpointInitEstimation;
     TileWorkQueue       mTileWorkQueue;
 
-    tbb::task_scheduler_init *mTaskScheduler;
+    std::unique_ptr<tbb::global_control> mTaskScheduler;
 
     // The is the sample count.
     size_t              mSamplesPerPass[MAX_RENDER_PASSES];

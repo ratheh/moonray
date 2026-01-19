@@ -678,7 +678,7 @@ static inline bool compare_exchange_strong(Int128 *ptr, Int128 *_Expected, const
         &reinterpret_cast<long long&>(ptr), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
 #endif // ^^^ _M_X64 ^^^
     if (_Result == 0) {
-        ::memcpy(_Expected, &_Expected_temp, Int128);
+        ::memcpy(_Expected, &_Expected_temp, sizeof(Int128));
     }
 
     return _Result != 0;

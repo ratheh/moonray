@@ -18,7 +18,7 @@
 namespace scene_rdl2 {
 
 namespace math {
-class Viewport;
+struct Viewport;
 }
 namespace fb_util {
 class Tile;

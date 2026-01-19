@@ -34,6 +34,17 @@
 // Comment out this line to turn off scoped accumulators.
 #define PROFILE_ACCUMULATORS_ENABLED
 
+// Windows DLL export/import macros for global variables
+#ifdef _WIN32
+  #ifdef rendering_mcrt_common_EXPORTS
+    #define MCRT_COMMON_API __declspec(dllexport)
+  #else
+    #define MCRT_COMMON_API __declspec(dllimport)
+  #endif
+#else
+  #define MCRT_COMMON_API
+#endif
+
 namespace moonray {
 namespace mcrt_common {
 
@@ -65,7 +76,7 @@ enum AccumulatorFlags
 struct Accumulator;
 struct ThreadLocalAccumulator;
 
-extern bool gAccumulatorsActive;
+MCRT_COMMON_API extern bool gAccumulatorsActive;
 MNRY_DURING_ASSERTS(extern std::atomic_int gNumAccumulatorsActive);
 
 struct AccumulatorResult

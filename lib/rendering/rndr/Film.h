@@ -32,7 +32,7 @@
 #include <vector>
 
 namespace scene_rdl2 {
-namespace math { class Viewport; }
+namespace math { struct Viewport; }
 namespace fb_util {
     class ActivePixels;
     class TileExtrapolation;

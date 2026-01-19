@@ -74,7 +74,7 @@ struct AccumulatorHandles
     Accumulator *mInternalAccumulators[NUM_INTERNAL_ACC];
 };
 
-extern AccumulatorHandles gAccumulatorHandles;
+MCRT_COMMON_API extern AccumulatorHandles gAccumulatorHandles;
 
 // This function has the job a querying the raw accumulators and transforming
 // them into exclusive times.

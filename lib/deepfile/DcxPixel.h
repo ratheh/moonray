@@ -56,7 +56,7 @@ OPENDCX_INTERNAL_NAMESPACE_HEADER_ENTER
 //-------------------------------------------------------------------------------------
 
 template <class T>
-class DCX_EXPORT Pixel
+class Pixel  // Note: Template classes should not be dllexport/dllimport
 {
   public:
     ChannelSet  channels;                   // Set of enabled channels

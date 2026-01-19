@@ -12,7 +12,8 @@ target_sources(${target}
         moonray.cc
 )
 
-if (NOT IsDarwinPlatform)
+# libatomic is only needed on Linux with GCC, not on macOS or Windows
+if (IsLinuxPlatform)
     set(PlatformSpecificLibs atomic)
 endif()
 

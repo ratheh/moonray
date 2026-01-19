@@ -12,6 +12,13 @@
 #include <cstdlib>
 #include <iostream>
 
+#ifdef _WIN32
+#include <windows.h>
+#define usleep(x) Sleep((x) / 1000)  // usleep takes microseconds, Sleep takes milliseconds
+#else
+#include <unistd.h>
+#endif
+
 using scene_rdl2::logging::Logger;
 
 namespace moonray {

@@ -46,6 +46,7 @@ function(${PROJECT_NAME}_cxx_compile_definitions target)
                 _USE_MATH_DEFINES
                 NOMINMAX
                 _HAS_AUTO_PTR_ETC=1                 # MSVC - enable auto_ptr when targeting c++17 and ensure std::random_shuffle is available
+                _ENABLE_EXTENDED_ALIGNED_STORAGE    # MSVC - enable extended alignment for std::aligned_storage (required for cache-line aligned atomics)
         )
     endif()
     if(MOONRAY_DWA_BUILD)

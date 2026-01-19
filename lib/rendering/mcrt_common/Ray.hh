@@ -68,7 +68,8 @@
 // Windows ISPC padding: ALIGN(16) on C++ Ray adds 4 bytes padding to reach 256.
 // ISPC needs matching padding since RayDifferential inherits from Ray in C++ but is
 // flat in ISPC. Use HVD_ISPC_PAD which only adds padding in ISPC, not in C++.
-#if defined(_MSC_VER) || defined(TARGET_OS_WINDOWS)
+// Note: ISPC uses __WIN32__ (passed via -D flag), MSVC defines _MSC_VER
+#if defined(_MSC_VER) || defined(__WIN32__)
 #define HVD_RAY_ALIGN_PAD ;HVD_ISPC_PAD(rayAlignPad, 4)
 #else
 #define HVD_RAY_ALIGN_PAD
@@ -101,9 +102,10 @@
 // - Windows with ALIGN(16) inheritance: After HVD_RAY_ALIGN_PAD (4 bytes) makes Ray 256 bytes,
 //   RayDifferential needs 12 bytes padding (308 → 320) to match C++ ALIGN(16) rounding
 // - Linux: no padding needed (304 bytes)
+// Note: ISPC uses __WIN32__ (passed via -D flag), MSVC defines _MSC_VER
 #if CACHE_LINE_SIZE == 128
 #define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD ;HVD_ARRAY(uint32_t, pad1, (4))
-#elif defined(_MSC_VER) || defined(TARGET_OS_WINDOWS)
+#elif defined(_MSC_VER) || defined(__WIN32__)
 #define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD ;HVD_ARRAY(uint32_t, pad1, (3))
 #else
 #define HVD_RAY_DIFFERENTIAL_MEMEBERS_CACHE_PAD

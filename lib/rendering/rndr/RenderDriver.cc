@@ -2357,9 +2357,9 @@ RenderDriver::renderThread(RenderDriver *driver,
             break;
 
         case RenderThreadState::KILL_RENDER_THREAD:
-            // This is a sub-tbb scheduler init, we still have the main one to
+            // This is a sub-tbb global_control, we still have the main one to
             // clean up later, which happens in the RenderDriver destructor.
-            scheduler.terminate();
+            // With oneAPI TBB, global_control cleanup happens when it goes out of scope.
             driver->mRenderThreadState.set(RenderThreadState::KILL_RENDER_THREAD, RenderThreadState::DEAD);
             quit = true;
             break;

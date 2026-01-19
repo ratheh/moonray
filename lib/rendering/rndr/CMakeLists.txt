@@ -147,6 +147,15 @@ Moonray_cxx_compile_features(${component})
 Moonray_cxx_compile_options(${component})
 Moonray_link_options(${component})
 
+# Windows: Allow multiply-defined symbols due to deepfile being exported from
+# rendering_pbr.dll while also being linked via deepfile.lib.
+# This is a known Windows DLL export issue when CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS is used.
+# The symbols are identical (same source), so FORCE:MULTIPLE is safe here.
+# TODO: Proper fix would be to use explicit __declspec(dllexport) instead of auto-export.
+if(IsWindowsPlatform)
+    target_link_options(${component} PRIVATE /FORCE:MULTIPLE)
+endif()
+
 # Extra definitions needed by this target
 target_compile_definitions(${component}
     PUBLIC

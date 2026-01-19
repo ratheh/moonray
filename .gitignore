@@ -60,3 +60,19 @@ profiling/profiles/
 /boot
 /site_scons
 /bamboo_tools
+
+# ==== Windows Build Artifacts ====
+# ISPC-generated stub headers (generated into source tree via build junctions)
+*_ispc_stubs.h
+
+# Flex/Bison generated parsers
+lib/rendering/pbr/core/AovMatLexer.cc
+lib/rendering/pbr/core/AovMatParser.cc
+
+# Sampling definitions (generated)
+lib/rendering/pbr/SamplingDefinitions.h
+
+# Symlinks/junctions that get recreated by CMake configure
+# (These are tracked as relative symlinks but CMake recreates them as absolute)
+include/moonray
+moonray

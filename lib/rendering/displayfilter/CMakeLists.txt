@@ -21,11 +21,13 @@ target_sources(${objLib}
         InputBuffer.ispc
 )
 
-# set some ISPC related properties
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Put ISPC headers in include path structure for proper include resolution
+set(ispcIncludeDir ${PROJECT_NAME}/include/${installIncludeDir})
+set(ispcIncludeBinDir ${CMAKE_BINARY_DIR}/${ispcIncludeDir})
+
 set_target_properties(${objLib} PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}
+    ISPC_HEADER_DIRECTORY /${ispcIncludeDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -74,14 +76,14 @@ set_property(TARGET ${component}
         InputBuffer.hh
         InputBuffer.isph
         InputBuffer.h
-        ${CMAKE_CURRENT_BINARY_DIR}/DisplayFilter_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/InputBuffer_ispc_stubs.h
+        ${ispcIncludeBinDir}/DisplayFilter_ispc_stubs.h
+        ${ispcIncludeBinDir}/InputBuffer_ispc_stubs.h
 )
 
 target_include_directories(${component}
     INTERFACE
         # find the generated ispc headers during build stage
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${ispcIncludeBinDir}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>

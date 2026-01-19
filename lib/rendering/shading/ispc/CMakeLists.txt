@@ -40,23 +40,26 @@ target_sources(shading_eval_ispc
         UdimTexture.ispc
 )
 
+# Put ISPC headers in include path structure for proper include resolution
+set(ispcIncludeDir ${PROJECT_NAME}/include/${installIncludeDir})
+set(ispcIncludeBinDir ${CMAKE_BINARY_DIR}/${ispcIncludeDir})
+
 set_property(TARGET shading_eval_ispc
     PROPERTY PUBLIC_HEADER
         BasicTexture.isph
         EvalAttribute.isph
         Shading.isph
         UdimTexture.isph
-        ${CMAKE_CURRENT_BINARY_DIR}/BasicTexture_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/EvalAttribute_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/OpenVdbUtil_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Shading_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/UdimTexture_ispc_stubs.h
+        ${ispcIncludeBinDir}/BasicTexture_ispc_stubs.h
+        ${ispcIncludeBinDir}/EvalAttribute_ispc_stubs.h
+        ${ispcIncludeBinDir}/OpenVdbUtil_ispc_stubs.h
+        ${ispcIncludeBinDir}/Shading_ispc_stubs.h
+        ${ispcIncludeBinDir}/UdimTexture_ispc_stubs.h
 )
 
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set_target_properties(shading_eval_ispc PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}
+    ISPC_HEADER_DIRECTORY /${ispcIncludeDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -69,7 +72,7 @@ set_target_properties(shading_eval_ispc PROPERTIES
 target_include_directories(shading_eval_ispc
     PUBLIC
         # find the generated ispc headers during build stage
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${ispcIncludeBinDir}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -196,8 +199,7 @@ set(sources10
         bssrdf/NormalizedDiffusion.ispc
         bssrdf/VolumeSubsurface.ispc)
 
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-
+# Use include path structure for ISPC headers
 function(make_ispc_target target sources stubsDestination)
     add_library(${target} OBJECT)
 
@@ -205,17 +207,21 @@ function(make_ispc_target target sources stubsDestination)
         set_target_properties(${target} PROPERTIES LINKER_LANGUAGE CXX)
     endif()
 
+    # Calculate the proper header directory for includes
+    set(stubHeaderDir ${ispcIncludeDir}/${stubsDestination})
+    set(stubHeaderBinDir ${CMAKE_BINARY_DIR}/${stubHeaderDir})
+
     target_sources(${target} PRIVATE ${sources})
     foreach(source ${sources})
         string(REGEX REPLACE "(.*)\.ispc"
-            "${CMAKE_CURRENT_BINARY_DIR}/\\1_ispc_stubs.h"
+            "${stubHeaderBinDir}/\\1_ispc_stubs.h"
             header ${source})
         list(APPEND headers ${header})
     endforeach()
 
     set_target_properties(${target} PROPERTIES
         ISPC_HEADER_SUFFIX _ispc_stubs.h
-        ISPC_HEADER_DIRECTORY /${relBinDir}/${stubsDestination}
+        ISPC_HEADER_DIRECTORY /${stubHeaderDir}
         ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
         ISPC_ARCH ${GLOBAL_ISPC_ARCH}
         ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -229,7 +235,7 @@ function(make_ispc_target target sources stubsDestination)
 
     target_include_directories(${target}
         PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+            $<BUILD_INTERFACE:${stubHeaderBinDir}>
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     )
@@ -252,13 +258,13 @@ function(make_ispc_target target sources stubsDestination)
     # We need to create the destination directory for the ispc_stubs.h
     # files before building the objects
     add_custom_target(${target}_make_dir COMMAND
-        ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${stubsDestination})
+        ${CMAKE_COMMAND} -E make_directory ${stubHeaderBinDir})
 
     add_dependencies(${target} ${target}_make_dir)
 
     get_target_property(objLibDeps ${target} DEPENDENCY)
     if(NOT objLibDeps STREQUAL "")
-        add_dependencies(${objLibDeps} 
+        add_dependencies(${objLibDeps}
             SceneRdl2::common_platform
             SceneRdl2::scene_rdl2
             ${target}_make_dir
@@ -302,7 +308,7 @@ target_sources(eval_attribute_debug_hack_ispc PRIVATE EvalAttributeDebugHack.isp
 
 set_target_properties(eval_attribute_debug_hack_ispc PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}
+    ISPC_HEADER_DIRECTORY /${ispcIncludeDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -311,7 +317,7 @@ set_target_properties(eval_attribute_debug_hack_ispc PROPERTIES
 
 target_include_directories(eval_attribute_debug_hack_ispc
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${ispcIncludeBinDir}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
@@ -405,7 +411,7 @@ set_property(TARGET shading_ispc
 
 target_include_directories(shading_ispc
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${ispcIncludeBinDir}>
     PUBLIC
         # find the generated ispc headers during build stage
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -510,7 +516,7 @@ install(
 )
 install(
     FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/bssrdf/Bssrdf_ispc_stubs.h
+        ${ispcIncludeBinDir}/bssrdf/Bssrdf_ispc_stubs.h
     DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR}/${installIncludeDir}/bssrdf
 )

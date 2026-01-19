@@ -29,6 +29,11 @@ target_sources(${component}
         Xform.ispc
 )
 
+# ISPC headers are generated in the include directory structure
+# Define paths for generated headers (used in PUBLIC_HEADER below)
+set(ispcHeaderDir ${PROJECT_NAME}/include/${installIncludeDir})
+set(ispcHeaderBinDir ${CMAKE_BINARY_DIR}/${ispcHeaderDir})
+
 set_property(TARGET ${component}
     PROPERTY PUBLIC_HEADER
         Intersection.hh
@@ -37,19 +42,19 @@ set_property(TARGET ${component}
         State.isph
         ThreadLocalObjectState.isph
         Xform.isph
-        ${CMAKE_CURRENT_BINARY_DIR}/AttributeTable_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Intersection_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Intersection_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/MipSelector_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/ShadingTLState_ispc_stubs.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Xform_ispc_stubs.h
+        ${ispcHeaderBinDir}/AttributeTable_ispc_stubs.h
+        ${ispcHeaderBinDir}/Intersection_ispc_stubs.h
+        ${ispcHeaderBinDir}/MipSelector_ispc_stubs.h
+        ${ispcHeaderBinDir}/ShadingTLState_ispc_stubs.h
+        ${ispcHeaderBinDir}/Xform_ispc_stubs.h
 )
 
 # set some ISPC related properties
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Generate ISPC headers into the include path structure
+# so that includes like <moonray/rendering/bvh/shading/ispc/Xform_ispc_stubs.h> work
 set_target_properties(${component} PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}
+    ISPC_HEADER_DIRECTORY /${ispcHeaderDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}

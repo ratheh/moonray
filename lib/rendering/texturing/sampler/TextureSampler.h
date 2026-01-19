@@ -11,7 +11,7 @@
 #include <scene_rdl2/common/grid_util/Parser.h>
 #include <scene_rdl2/common/math/Color.h>
 
-#include <tbb/recursive_mutex.h>
+#include <mutex>
 
 // system
 #include <string>
@@ -137,7 +137,7 @@ protected:
     // For the udim case, a single ImageMap may reference multiple texture files.
     std::multimap<scene_rdl2::rdl2::Shader *, OIIO::ustring> mShaderToName;
 
-    tbb::recursive_mutex mMutex;
+    std::recursive_mutex mMutex;
 
     Parser mParser;
 };

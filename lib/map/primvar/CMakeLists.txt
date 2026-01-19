@@ -20,10 +20,13 @@ target_sources(${objLib}
         ispc/Primvar.ispc
 )
 
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Put ISPC headers in include path structure for proper include resolution
+set(ispcIncludeDir ${PROJECT_NAME}/include/${installIncludeDir}/ispc)
+set(ispcIncludeBinDir ${CMAKE_BINARY_DIR}/${ispcIncludeDir})
+
 set_target_properties(${objLib} PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}/ispc
+    ISPC_HEADER_DIRECTORY /${ispcIncludeDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -32,7 +35,7 @@ set_target_properties(${objLib} PROPERTIES
 # We need to create the destination directory for the ispc_stubs.h
 # files before building the objects
 add_custom_target(${objLib}_make_dir COMMAND
-    ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/ispc)
+    ${CMAKE_COMMAND} -E make_directory ${ispcIncludeBinDir})
 
 add_dependencies(${objLib} ${objLib}_make_dir)
 
@@ -74,12 +77,12 @@ set_property(TARGET ${component}
 set_property(TARGET ${component}
     PROPERTY PRIVATE_HEADER
         ispc/Primvar.isph
-        ${CMAKE_CURRENT_BINARY_DIR}/ispc/Primvar_ispc_stubs.h
+        ${ispcIncludeBinDir}/Primvar_ispc_stubs.h
 )
 
 target_include_directories(${component}
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${ispcIncludeBinDir}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>

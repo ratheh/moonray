@@ -20,10 +20,13 @@ target_sources(${objLib}
         StateMachine.ispc
 )
 
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Put ISPC headers in include path structure for proper include resolution
+set(ispcIncludeDir ${PROJECT_NAME}/include/${installIncludeDir})
+set(ispcIncludeBinDir ${CMAKE_BINARY_DIR}/${ispcIncludeDir})
+
 set_target_properties(${objLib} PROPERTIES
     ISPC_HEADER_SUFFIX _ispc_stubs.h
-    ISPC_HEADER_DIRECTORY /${relBinDir}
+    ISPC_HEADER_DIRECTORY /${ispcIncludeDir}
     ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
     ISPC_ARCH ${GLOBAL_ISPC_ARCH}
     ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}
@@ -60,7 +63,7 @@ target_sources(${component}
 
 set_property(TARGET ${component}
     PROPERTY PUBLIC_HEADER
-        ${CMAKE_CURRENT_BINARY_DIR}/StateMachine_ispc_stubs.h
+        ${ispcIncludeBinDir}/StateMachine_ispc_stubs.h
 )
 
 target_include_directories(${component}

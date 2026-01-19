@@ -80,16 +80,21 @@ set(sources04
 set(sources05
         Types.ispc)
 
-file(RELATIVE_PATH relBinDir ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Put ISPC headers in include path structure for proper include resolution
+set(ispcIncludeDir ${PROJECT_NAME}/include/${installIncludeDir})
+set(ispcIncludeBinDir ${CMAKE_BINARY_DIR}/${ispcIncludeDir})
 
 function(make_ispc_target target sources stubsDestination)
     add_library(${target} OBJECT)
 
     target_sources(${target} PRIVATE ${sources})
 
+    # Calculate proper header directory for includes
+    set(stubHeaderDir ${ispcIncludeDir}/${stubsDestination})
+
     set_target_properties(${target} PROPERTIES
         ISPC_HEADER_SUFFIX _ispc_stubs.h
-        ISPC_HEADER_DIRECTORY /${relBinDir}/${stubsDestination}
+        ISPC_HEADER_DIRECTORY /${stubHeaderDir}
         ISPC_INSTRUCTION_SETS ${GLOBAL_ISPC_INSTRUCTION_SETS}
         ISPC_ARCH ${GLOBAL_ISPC_ARCH}
         ISPC_TARGET_OS ${GLOBAL_ISPC_TARGET_OS}

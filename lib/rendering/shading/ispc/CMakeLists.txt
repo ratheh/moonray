@@ -213,9 +213,10 @@ function(make_ispc_target target sources stubsDestination)
 
     target_sources(${target} PRIVATE ${sources})
     foreach(source ${sources})
-        string(REGEX REPLACE "(.*)\.ispc"
-            "${stubHeaderBinDir}/\\1_ispc_stubs.h"
-            header ${source})
+        # Extract just the filename without directory prefix to avoid path duplication
+        # (e.g., bsdf/Bsdf.ispc -> Bsdf, not bsdf/Bsdf which would create bsdf/bsdf/)
+        get_filename_component(source_name ${source} NAME_WE)
+        set(header "${stubHeaderBinDir}/${source_name}_ispc_stubs.h")
         list(APPEND headers ${header})
     endforeach()
 

@@ -32,10 +32,19 @@
 #include <limits>
 #include <stdint.h>
 #include <string>
-#include <sys/ioctl.h>
-#include <signal.h>
 #include <time.h>
+
+#include <signal.h>  // signal handling (works on both Windows and Unix)
+
+#ifdef _WIN32
+#include <io.h>
+#include <windows.h>
+#define isatty _isatty
+#define STDOUT_FILENO _fileno(stdout)
+#else
+#include <sys/ioctl.h>
 #include <unistd.h>
+#endif
 
 // In seconds.
 #define LOG_PROGRESS_TIME_INTERVAL  60.0
@@ -169,15 +178,22 @@ RaasApplication::printStatusLine(rndr::RenderContext& renderContext, double star
     if (isatty(STDOUT_FILENO)) {
 
         // Get the terminal width.
+        int terminalWidth = 80; // default
+#ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+            terminalWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        }
+#else
         winsize win;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
-
-        if (win.ws_col == 0) {
-            win.ws_col = 80; // situation like emacs shell
+        if (win.ws_col != 0) {
+            terminalWidth = win.ws_col;
         }
+#endif
 
         // Compute progress bar layout.
-        int barWidth = win.ws_col
+        int barWidth = terminalWidth
                        - 6  // "  [/] " (spinner)
                        - 9  // "Rendering"
                        - 4  // " [" + "] " (bar borders and spacing)

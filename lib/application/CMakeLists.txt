@@ -11,7 +11,9 @@ add_library(${PROJECT_NAME}::${component} ALIAS ${component})
 
 if(IsDarwinPlatform)
     set(PlatformSpecificSources macos/ChangeWatcherImpl.mm)
-else(IsLinuxPlatform)
+elseif(IsWindowsPlatform)
+    set(PlatformSpecificSources windows/ChangeWatcherImpl.cc)
+else()
     set(PlatformSpecificSources linux/ChangeWatcherImpl.cc)
 endif()
 

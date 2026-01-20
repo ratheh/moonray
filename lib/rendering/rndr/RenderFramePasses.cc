@@ -168,7 +168,7 @@ RenderDriver::renderPasses(RenderDriver *driver, const FrameState &fs,
                  << "  " << cpuAff->getMcrtMessage() << '\n'
                  << "  " << mcrt_common::AffinityManager::get()->getMem()->getMcrtMessage() << '\n'
                  << "}";
-            std::string msg = ostr.str(); 
+            std::string msg = ostr.str();
 
             scene_rdl2::logging::Logger::info(msg);
             if (isatty(STDOUT_FILENO)) std::cerr << msg << '\n';
@@ -269,7 +269,6 @@ RenderDriver::renderPasses(RenderDriver *driver, const FrameState &fs,
 
             double timeReady = scene_rdl2::util::getSeconds(); // get current time
 
-
             // Embree wants these modes set on each thread it uses.
             _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
             _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -295,7 +294,7 @@ RenderDriver::renderPasses(RenderDriver *driver, const FrameState &fs,
 
             unsigned long long processedTilesTotal = 0ULL;
             unsigned long long processedSampleTotal = 0ULL;
-                            
+
             // We have to track the condition of stopAtPassBoundary each thread independently
             // in order to properly flush the radiance queue under vector mode.
             bool stopAtPassBoundaryThreadLocal = false;

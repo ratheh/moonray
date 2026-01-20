@@ -7,6 +7,7 @@
 #include <scene_rdl2/common/platform/HybridUniformData.hh>
 
 // Sizeof members of STL types for ispc
+// Note: ISPC uses __WIN32__ (passed via -D flag), MSVC defines _MSC_VER
 #if defined(__APPLE__)
 #define SIZEOF_BGEXTRAAOVS          24
 #define SIZEOF_LPE_STATEMACHINE     8
@@ -14,7 +15,7 @@
 #define SIZEOF_STD_VECTOR           24
 #define SIZEOF_VARIANCEAOVMAP       80
 #define AOV_SCHEMA_MEMBERS_PADDING  6
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) || defined(__WIN32__)
 #define SIZEOF_BGEXTRAAOVS          24
 #define SIZEOF_LPE_STATEMACHINE     8
 #define SIZEOF_LABELSUBSTITUTIONS   64

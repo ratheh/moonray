@@ -1,6 +1,7 @@
 // Copyright 2023-2024 DreamWorks Animation LLC
 // SPDX-License-Identifier: Apache-2.0
 
+#include <array>  // Required for std::array (MSVC)
 #include <scene_rdl2/common/math/Math.h>
 #include <scene_rdl2/scene/rdl2/rdl2.h>
 

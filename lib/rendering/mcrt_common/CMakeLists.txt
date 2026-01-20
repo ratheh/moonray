@@ -64,6 +64,7 @@ set(AFFINITY_HEADERS AffinityManager.h)
 target_sources(${component}
     PRIVATE
         ${AFFINITY_SOURCES}
+        CancelFlag.cc
         Frustum.cc
         ProfileAccumulator.cc
         ProfileAccumulatorHandles.cc
@@ -78,6 +79,7 @@ target_sources(${component}
 set_property(TARGET ${component}
     PROPERTY PUBLIC_HEADER
         ${AFFINITY_HEADERS}
+        CancelFlag.h
         ExecutionMode.h
         Frustum.h
         ThreadLocalState.hh

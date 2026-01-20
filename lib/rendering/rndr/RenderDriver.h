@@ -16,6 +16,7 @@
 #include "TileScheduler.h"
 #include "Types.h"
 #include "Util.h"
+#include <moonray/rendering/mcrt_common/CancelFlag.h>
 #include <moonray/rendering/rndr/adaptive/ActivePixelMask.h>
 #include <moonray/rendering/pbr/camera/StereoView.h>
 #include <moonray/rendering/pbr/core/XPUOcclusionRayQueue.h>
@@ -79,37 +80,10 @@ class TileSampleSpecialEvent;
 class TileScheduler;
 class VariablePixelBuffer;
 
-// Used to signify that we should wrap up rendering this frame ASAP.
-// This flag used to live in RenderDriver. It doesn't anymore for two reasons:
-// * We want atomic behavior. While it's possible to do atomic operations in ISPC, doing them on the same data structure
-//   would require a lot of effort (i.e. we would have to hand-roll a lot of the atomic operations and pass around a
-//   normal bool). Now we just access the boolean from an extern "C" function and let C++ worry about the atomacity.
-// * We want to align this on a cache line. False sharing caused a simple render to go from 25 seconds to more than a
-//   minute and a half. Unfortunately, ICC compilation results in an error when aligning this member variable, saying
-//   that our dynamic allocation of RenderDriver is mis-aligned. I believe this is an ICC bug, as an aligned member
-//   variable should only change the size of RenderDriver, and not the allocation alignment requirements of RenderDriver
-//   itself (we're not changing the alignment of RenderDriver, only the size).
-struct alignas(64) CancelFlag
-{
-    CancelFlag() noexcept
-    : mCanceled(false)
-    {
-    }
-
-    bool isCanceled() const noexcept
-    {
-        return mCanceled.load(std::memory_order_relaxed);
-    }
-
-    void set(bool v) noexcept
-    {
-        mCanceled.store(v, std::memory_order_relaxed);
-    }
-
-    std::atomic_bool mCanceled;
-};
-
-extern CancelFlag gCancelFlag;
+// CancelFlag is now defined in mcrt_common to break circular dependency between
+// rendering_pbr and rendering_rndr. Import for API compatibility.
+using mcrt_common::CancelFlag;
+using mcrt_common::gCancelFlag;
 
 //-----------------------------------------------------------------------------
 

@@ -62,20 +62,14 @@ using namespace scene_rdl2::util;
 // using namespace scene_rdl2::math; // can't use this as it breaks openvdb in clang.
 using scene_rdl2::logging::Logger;
 
-// Can be called from C++ and ISPC
-extern "C" bool isRenderCanceled()
-{
-    const bool canceled = moonray::rndr::gCancelFlag.isCanceled();
-    return canceled;
-}
+// isRenderCanceled() and gCancelFlag are now defined in rendering_mcrt_common
+// to break circular dependency between rendering_pbr and rendering_rndr.
 
 namespace moonray {
 
 using namespace mcrt_common;
 
 namespace rndr {
-
-CancelFlag gCancelFlag;
 
 bool
 hasData(float pixel) {

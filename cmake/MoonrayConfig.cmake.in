@@ -20,14 +20,15 @@ endif()
 
 find_package(Amorphous QUIET)
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT WIN32)
   find_dependency(Libatomic)
 endif()
 find_dependency(ZLIB)
 find_package(IlmBase QUIET)
 find_dependency(JPEG)
 find_dependency(SceneRdl2)
-find_dependency(McrtDenoise)
+# McrtDenoise is optional - requires Intel OIDN which may not be available
+find_package(McrtDenoise QUIET)
 find_dependency(OpenEXR)
 find_dependency(OpenVDB)
 find_dependency(OpenSubDiv)

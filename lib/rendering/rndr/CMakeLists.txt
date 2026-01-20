@@ -124,7 +124,7 @@ target_link_libraries(${component}
         ${PROJECT_NAME}::common_time
         ${PROJECT_NAME}::rendering_bvh_shading
         ${PROJECT_NAME}::rendering_displayfilter
-        ${PROJECT_NAME}::rendering_mcrt_common
+        ${PROJECT_NAME}::rendering_mcrt_common  # Explicit dependency for CancelFlag/gCancelFlag
         ${PROJECT_NAME}::rendering_geom
         ${PROJECT_NAME}::rendering_pbr
         ${PROJECT_NAME}::rendering_rt

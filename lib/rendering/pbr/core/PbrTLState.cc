@@ -33,7 +33,9 @@
 // We should be commented out for the release version
 //#define STRICT_CHECK_FOR_GETPOOLINFO
 
-extern "C" bool isRenderCanceled();
+// isRenderCanceled() is now defined in rendering_mcrt_common (CancelFlag.cc)
+// to break the circular dependency between rendering_pbr and rendering_rndr.
+#include <moonray/rendering/mcrt_common/CancelFlag.h>
 
 namespace ispc {
 extern "C" uint32_t PbrTLState_hudValidation(bool);

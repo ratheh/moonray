@@ -31,11 +31,15 @@ class CACHE_ALIGN ThreadLocalObjectState
         void *memptr;
 #ifndef _MSC_VER
         if (auto err = posix_memalign(&memptr, 64, sizeof(ThreadLocalObjectState)*num)) {
-#else
-        if (auto err = _aligned_malloc(sizeof(ThreadLocalObjectState) * num, 64)) {
-#endif
             throw std::bad_alloc();
         }
+#else
+        // _aligned_malloc returns pointer on success, NULL on failure (unlike posix_memalign which returns error code)
+        memptr = _aligned_malloc(sizeof(ThreadLocalObjectState) * num, 64);
+        if (!memptr) {
+            throw std::bad_alloc();
+        }
+#endif
         ThreadLocalObjectState *result = static_cast<ThreadLocalObjectState *>(memptr);
         {
             for (int i = 0; i < num; i++) {

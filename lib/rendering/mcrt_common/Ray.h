@@ -103,7 +103,8 @@ struct ALIGN(16) Ray
         id(0),
         primID(-1),
         geomID(-1),
-        instID(-1)
+        instID(-1),
+        instPrimID(-1)
     {
     }
 
@@ -123,6 +124,7 @@ struct ALIGN(16) Ray
         primID(-1),
         geomID(-1),
         instID(-1),
+        instPrimID(-1),
         ext(inDepth)
     {
     }

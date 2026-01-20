@@ -41,6 +41,7 @@ Ray_init(      varying RayDifferential *uniform ray,
     ray->geomID = -1;
     ray->primID = -1;
     ray->instID = -1;
+    ray->instPrimID = -1;
     ray->ext.materialID = -1;
     ray->ext.depth = parent.ext.depth + 1;
     Address64_clear(&(ray->ext.userData));

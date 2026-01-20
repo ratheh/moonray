@@ -89,44 +89,52 @@
 
 // RayState padding to align to CACHE_LINE_SIZE boundary
 // Note: ISPC uses __WIN32__ (passed via -D flag), MSVC defines _MSC_VER
+//
+// With Embree4 instPrimID and ALIGN(16) on Ray:
+// - Windows/macOS: RayDifferential is 336 bytes (272 Ray + 52 diff + 12 pad1)
+// - Linux: RayDifferential is 312 bytes (260 Ray + 52 diff, no cache pad)
+// - Windows/macOS: RayState ends at 600 bytes, pad to 640 for cache alignment
+// - Linux: RayState ends at 576 bytes (already aligned)
 #if CACHE_LINE_SIZE == 128
-/*Alignment: 128 (CACHE_LINE_SIZE), Total size: 584, Padded size: 640*/
-#define RAY_STATE_MEMBERS_PAD   (46+8)
+// macOS ARM: 128-byte cache line alignment
+// Total size: 600, Padded size: 640, Padding needed: 40
+#define RAY_STATE_MEMBERS_PAD   40
 #elif defined(_MSC_VER) || defined(__WIN32__)
-// Windows: RayDifferential is 320 bytes (16 more than Linux due to ALIGN(16))
-// Total size: 584, Padded to 640 for 64-byte cache line alignment
-#define RAY_STATE_MEMBERS_PAD   56
+// Windows: RayDifferential is 336 bytes
+// Total size: 600, Padded to 640 for 64-byte cache line alignment
+#define RAY_STATE_MEMBERS_PAD   40
 #else
-/*Alignment: 64 (CACHE_LINE_SIZE), Total size: 568, Padded size: 576 */
-#define RAY_STATE_MEMBERS_PAD   8
+// Linux x86_64: 64-byte cache line alignment
+// RayDifferential is 312 bytes (no pad1), Total size: 576, already aligned
+#define RAY_STATE_MEMBERS_PAD   0
 #endif
 
-#define RAY_STATE_MEMBERS                                                   /*   size   macOS  */\
-    HVD_MEMBER(HVD_NAMESPACE(mcrt_common, RayDifferential), mRay);          /*    304    320   */\
-    HVD_MEMBER(PathVertex, mPathVertex);                                    /*    388    404   */\
-    HVD_MEMBER(uint32_t, mSequenceID);                                      /*    392    408   */\
-    HVD_MEMBER(Subpixel, mSubpixel);                                        /*    424    440   */\
-    HVD_MEMBER(uint32_t, mPad0);                                            /*    428    444   */\
-    HVD_MEMBER(uint32_t, mTilePass);                                        /*    432    448   */\
-    HVD_MEMBER(uint32_t, mRayStateIdx);                                     /*    436    452   */\
-    HVD_ISPC_PAD(mPad1, 4);                                                 /*    440    456   */\
-    HVD_PTR(HVD_NAMESPACE(shading, Intersection) *, mAOSIsect);             /*    448    464   */\
-    HVD_MEMBER(uint32_t, mDeepDataHandle);                                  /*    452    468   */\
-    HVD_MEMBER(uint32_t, mCryptomatteDataHandle);                           /*    456    472   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoRefP);        /*    468    484   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoP0);          /*    480    496   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoRefN);        /*    492    508   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec2f), mCryptoUV);          /*    500    516   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolRad);            /*    512    528   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTr);             /*    524    540   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTh);             /*    536    552   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTalpha);         /*    548    564   */\
-    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTm);             /*    560    576   */\
-    HVD_MEMBER(uint32_t, mVolHit);                                          /*    564    580   */\
-    HVD_MEMBER(float, mVolumeSurfaceT);                                     /*    568    584   */\
+#define RAY_STATE_MEMBERS                                                   /*  linux   win    */\
+    HVD_MEMBER(HVD_NAMESPACE(mcrt_common, RayDifferential), mRay);          /*    312    336   */\
+    HVD_MEMBER(PathVertex, mPathVertex);                                    /*    396    420   */\
+    HVD_MEMBER(uint32_t, mSequenceID);                                      /*    400    424   */\
+    HVD_MEMBER(Subpixel, mSubpixel);                                        /*    432    456   */\
+    HVD_MEMBER(uint32_t, mPad0);                                            /*    436    460   */\
+    HVD_MEMBER(uint32_t, mTilePass);                                        /*    440    464   */\
+    HVD_MEMBER(uint32_t, mRayStateIdx);                                     /*    444    468   */\
+    HVD_ISPC_PAD(mPad1, 4);                                                 /*    448    472   */\
+    HVD_PTR(HVD_NAMESPACE(shading, Intersection) *, mAOSIsect);             /*    456    480   */\
+    HVD_MEMBER(uint32_t, mDeepDataHandle);                                  /*    460    484   */\
+    HVD_MEMBER(uint32_t, mCryptomatteDataHandle);                           /*    464    488   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoRefP);        /*    476    500   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoP0);          /*    488    512   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec3f), mCryptoRefN);        /*    500    524   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Vec2f), mCryptoUV);          /*    508    532   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolRad);            /*    520    544   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTr);             /*    532    556   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTh);             /*    544    568   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTalpha);         /*    556    580   */\
+    HVD_MEMBER(HVD_NAMESPACE(scene_rdl2::math, Color), mVolTm);             /*    568    592   */\
+    HVD_MEMBER(uint32_t, mVolHit);                                          /*    572    596   */\
+    HVD_MEMBER(float, mVolumeSurfaceT);                                     /*    576    600   */\
     HVD_ISPC_PAD(pad, RAY_STATE_MEMBERS_PAD)                                /*    576    640   */\
-                                                              /* macOS: 640 * 4 lanes = 2560   */\
-                                                              /* linux: 576 * 8 lanes = 4608   */\
+                                                        /* win/macOS: 640 * 8 lanes = 5120   */\
+                                                        /* linux:     576 * 8 lanes = 4608   */\
 
 
 #define RAY_STATE_VALIDATION(vlen)                                          \

@@ -41,7 +41,7 @@ class VolumeRegions;
 }
 
 namespace mcrt_common {
-class Ray;
+struct Ray;  // Ray is defined as struct in Ray.h
 class RayDifferential;
 }
 

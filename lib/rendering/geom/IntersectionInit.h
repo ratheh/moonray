@@ -13,7 +13,7 @@ namespace shading { class Intersection; }
 
 namespace mcrt_common {
     class ThreadLocalState;
-    class Ray;
+    struct Ray;  // Ray is defined as struct in Ray.h
 }
 
 namespace geom {

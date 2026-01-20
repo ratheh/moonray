@@ -16,6 +16,13 @@
 
 #include <scene_rdl2/scene/rdl2/rdl2.h>
 
+// Windows/MSVC: Disable OpenVDB's log4cplus integration to avoid:
+// 1. std::auto_ptr removed in C++17
+// 2. log4cplus tstring (wstring on Windows) vs std::string mismatch
+#ifdef _MSC_VER
+#undef OPENVDB_USE_LOG4CPLUS
+#endif
+
 #include <openvdb/io/GridDescriptor.h>
 
 #include "attributes.cc"

@@ -87,9 +87,15 @@
 //----------------------------------------------------------------------------
 
 
+// RayState padding to align to CACHE_LINE_SIZE boundary
+// Note: ISPC uses __WIN32__ (passed via -D flag), MSVC defines _MSC_VER
 #if CACHE_LINE_SIZE == 128
 /*Alignment: 128 (CACHE_LINE_SIZE), Total size: 584, Padded size: 640*/
 #define RAY_STATE_MEMBERS_PAD   (46+8)
+#elif defined(_MSC_VER) || defined(__WIN32__)
+// Windows: RayDifferential is 320 bytes (16 more than Linux due to ALIGN(16))
+// Total size: 584, Padded to 640 for 64-byte cache line alignment
+#define RAY_STATE_MEMBERS_PAD   56
 #else
 /*Alignment: 64 (CACHE_LINE_SIZE), Total size: 568, Padded size: 576 */
 #define RAY_STATE_MEMBERS_PAD   8

@@ -12,6 +12,13 @@
 #include <scene_rdl2/common/math/Color.h>
 #include <scene_rdl2/common/math/Vec3.h>
 
+// Windows/MSVC: Disable OpenVDB's log4cplus integration to avoid:
+// 1. std::auto_ptr removed in C++17
+// 2. log4cplus tstring (wstring on Windows) vs std::string mismatch
+#ifdef _MSC_VER
+#undef OPENVDB_USE_LOG4CPLUS
+#endif
+
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/Interpolation.h>
 

@@ -74,6 +74,10 @@ function(${PROJECT_NAME}_cxx_compile_options target)
                 /UOPENVDB_USE_LOG4CPLUS         # Disable openvdb from bringing in log4cplus for now, as it needs patching to support MSVC
                 /wd4083                         # pragma warning: push/pop/disable
                 /wd4616                         # pragma warning: warning number '1875' not a valid compiler warning
+                # Performance optimization flags
+                /Oi                             # Generate intrinsic functions
+                /Ot                             # Favor fast code over small code
+                /GS-                            # Disable buffer security checks (performance critical code)
         )
     endif()
 endfunction()

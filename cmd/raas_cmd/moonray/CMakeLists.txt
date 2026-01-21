@@ -42,5 +42,11 @@ Moonray_cxx_compile_features(${target})
 Moonray_cxx_compile_options(${target})
 Moonray_link_options(${target})
 
+# Windows: Increase stack size to 8MB (matches reference build)
+# Default is 1MB which causes stack overflow on complex scenes like glass-of-water
+if(MSVC)
+    target_link_options(${target} PRIVATE "/STACK:8388608")
+endif()
+
 install(TARGETS ${target}
     RUNTIME DESTINATION bin)

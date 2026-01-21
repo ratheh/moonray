@@ -28,6 +28,8 @@
 #include <sys/types.h>          // fstat
 #ifndef _WIN32
 #include <unistd.h>             // unlink, close, isatty
+#else
+#include <windows.h>            // CopyFileA, DeleteFileA
 #endif
 
 // for runtime verify of block data size calculation
@@ -459,6 +461,7 @@ ImageWriteCacheTmpFileItem::openTmpFileAndUnlink()
 {
     if (mTmpFilename.empty()) return false;
 
+#ifndef _WIN32
     mTmpFileFd = open(mTmpFilename.c_str(), O_RDONLY, 0);
     if (mTmpFileFd == -1) {
         return false;
@@ -466,6 +469,11 @@ ImageWriteCacheTmpFileItem::openTmpFileAndUnlink()
     if (unlink(mTmpFilename.c_str()) == -1) {
         return false;
     }
+#else
+    // On Windows, we can't unlink an open file (POSIX unlink-while-open doesn't work).
+    // Skip the unlink here - the temp file will be deleted after copy in closeTmpFileAndCopy().
+    mTmpFileFd = 0; // Dummy value to indicate "temp file ready" on Windows
+#endif
     return true;
 }
 
@@ -473,7 +481,15 @@ bool
 ImageWriteCacheTmpFileItem::closeTmpFile()
 {
     if (mTmpFileFd == -1) return false;
+#ifndef _WIN32
     if (close(mTmpFileFd) == -1) return false;
+#else
+    // On Windows, mTmpFileFd is a dummy value (we didn't open the file for reading).
+    // Delete the temp file now that the copy is complete.
+    if (!mTmpFilename.empty()) {
+        DeleteFileA(mTmpFilename.c_str());
+    }
+#endif
     mTmpFileFd = -1;
     return true;
 }
@@ -576,16 +592,26 @@ ImageWriteCacheTmpFileItem::renameFile(const std::string &dstName, std::string &
 //
 // Source filename is created based on dstName by genCopyDestName().
 // Then rename source filename to dstName.
-//    
+//
 {
     MNRY_ASSERT(!dstName.empty() && errMsg.empty());
 
     std::string srcName = genCopyDestName(dstName);
+#ifndef _WIN32
     if (rename(srcName.c_str(), dstName.c_str()) == -1) {
         errMsg = scene_rdl2::util::buildString("Failed to rename from '", srcName.c_str(), "' to '",
                                    dstName.c_str(), "' ", strerror(errno));
         return false;
     }
+#else
+    // On Windows, use MoveFileExA which can replace existing files
+    if (!MoveFileExA(srcName.c_str(), dstName.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+        DWORD err = GetLastError();
+        errMsg = scene_rdl2::util::buildString("Failed to rename from '", srcName.c_str(), "' to '",
+                                   dstName.c_str(), "' Windows error code: ", (int)err);
+        return false;
+    }
+#endif
 
 #   ifdef IMAGE_WRITE_DETAIL_MESSAGE
     std::string msg = scene_rdl2::util::buildString("Renamed: to '", dstName.c_str(), "'");

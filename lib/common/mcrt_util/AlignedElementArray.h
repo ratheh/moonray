@@ -527,7 +527,13 @@ public:
     }
 
 private:
-#if (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L) || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 600)
+    // macOS 26/clang-21 build fix (backport of upstream OpenMoonRay/moonray main,
+    // lib/common/mcrt_util/AlignedElementArray.h): the original guarded doAllocate/doFree
+    // behind `#if _POSIX_C_SOURCE>=200112L || _XOPEN_SOURCE>=600 / #elif _MSC_VER`, with no
+    // macOS branch — and Apple clang does not auto-define _POSIX_C_SOURCE, so both branches
+    // were skipped → undeclared identifiers. Upstream uses an unconditional posix_memalign
+    // implementation. The _MSC_VER branch is dropped: this tree builds only the macOS SDK
+    // (the Windows SDK builds from the separate windows-build branch).
     [[gnu::alloc_size(1)]] [[gnu::malloc]] static void* doAllocate(std::size_t bytes)
     {
         void* mem;
@@ -545,21 +551,6 @@ private:
     {
         free(ptr);
     }
-#elif defined(_MSC_VER)
-    static void* doAllocate(std::size_t bytes)
-    {
-        void* mem = alignedMalloc(bytes, kAlignment);
-        if (mem == nullptr) {
-            throw std::bad_alloc{};
-        }
-        return mem;
-    };
-
-    static void doFree(void* ptr) noexcept
-    {
-        _aligned_free(ptr);
-    }
-#endif
 
     static T* checkAlignment(T* p) noexcept
     {
